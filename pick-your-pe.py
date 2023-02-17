@@ -2,7 +2,7 @@ import re
 import aiohttp
 from bs4 import BeautifulSoup as bs
 
-ua = ""
+ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36"
 sessKeyPattern = re.compile(r'peselection.xjtlu.edu.cn","sesskey":"(\w+)","loadingicon"')
 
 
@@ -121,14 +121,15 @@ class PE:
         key = input("请输入您要选择的项目编号:")
 
 
-async def main():
+async def main(u, p):
     async with aiohttp.ClientSession(headers={"User-Agent": ua}) as session:
-        app = PE(session, "fff","fff")
+        app = PE(session, u, p)
         await app.auth()
         await app.choice()
 
 
 if __name__ == '__main__':
     import asyncio
-
-    asyncio.run(main())
+    u = input("请输入您的账户: ")
+    p = input("请输入您的密码: ")
+    asyncio.run(main(u, p))
