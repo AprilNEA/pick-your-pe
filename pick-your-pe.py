@@ -72,22 +72,28 @@ class PE:
         return course_list
 
     async def _get_options(self, course_link="https://peselection.xjtlu.edu.cn/mod/choice/view.php?id=60"):
+        result = {}
         async with self.session.get(
                 url=course_link,
 
         ) as resp:
             text = await resp.text()
         text = bs(text, 'html.parser')
-        ul = text.find_all('ul', attrs={'class': 'choices'})[0]
-        options = ul.find_all('li', attrs={'class': 'option'})
-        result = {}
-        for option in options:
-            input = option.find('input')
-            value = input.get('value')
-            label = option.text
-            result[value] = {
-                "name": label
-            }
+        try:
+            ul = text.find_all('ul', attrs={'class': 'choices'})[0]
+            options = ul.find_all('li', attrs={'class': 'option'})
+
+            for option in options:
+                input = option.find('input')
+                value = input.get('value')
+                label = option.text
+                result[value] = {
+                    "name": label
+                }
+        except IndexError:
+            self.log_info(self, "当前课程尚未更新, 请在选择前夕再次尝试!")
+            self.log_info(self, "程序将退出")
+            exit(1)
         return result
 
     async def _submit_choice(self, id, answer):
@@ -130,6 +136,7 @@ async def main(u, p):
 
 if __name__ == '__main__':
     import asyncio
+
     u = input("请输入您的账户: ")
     p = input("请输入您的密码: ")
     asyncio.run(main(u, p))
