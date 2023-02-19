@@ -1,6 +1,13 @@
 # Pick your favorite PE lession!
 
+当前 PeSelection 页面，只有部分同学更新了选课课程，未更新的同学，请在选择当日重试。
+
 当前脚本仍在完善中，请务必保持脚本更新。
+- [ ] 持久化课程选择
+- [ ] 获得选择成功的返回结果(需要第一批选课的同学配合抓包)
+- [ ] 加入第二备选
+
+![Demo](./docs/demo.png)
 
 ![流程图](./docs/pick-your-pe.drawio.svg)
 
