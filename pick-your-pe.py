@@ -4,7 +4,7 @@ import json
 import aiohttp
 from bs4 import BeautifulSoup as bs
 from urllib import parse
-
+from getpass import getpass
 ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36"
 sessKeyPattern = re.compile(r'peselection.xjtlu.edu.cn","sesskey":"(\w+)","loadingicon"')
 
@@ -246,7 +246,7 @@ Author: AprilNEA (https://sku.moe)
         asyncio.run(main(local=local_files))
 
     else:
-
+        print(f"⚠️ 我们既不会保存更不会上传您的账号密码⚠️")
         u = input("请输入您的账户: ")
-        p = input("请输入您的密码: ")
+        p = getpass("请输入您的密码(密码不会显示,默念继续输就行): ")
         asyncio.run(main(None, u, p))
