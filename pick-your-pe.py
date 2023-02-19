@@ -137,6 +137,33 @@ async def main(u, p):
 if __name__ == '__main__':
     import asyncio
 
+    print("""
+ _______   _          __        ____  ____                         _______  ________  
+|_   __ \ (_)        [  |  _   |_  _||_  _|                       |_   __ \|_   __  | 
+  | |__) |__   .---.  | | / ]    \ \  / / .--.   __   _   _ .--.    | |__) | | |_ \_| 
+  |  ___/[  | / /'`\] | '' <      \ \/ // .'`\ \[  | | | [ `/'`\]   |  ___/  |  _| _  
+ _| |_    | | | \__.  | |`\ \     _|  |_| \__. | | \_/ |, | |      _| |_    _| |__/ | 
+|_____|  [___]'.___.'[__|  \_]   |______|'.__.'  '.__.'_/[___]    |_____|  |________| 
+                                                                                      
+Github: https://github.com/AprilNEA/pick-your-pe
+Author: AprilNEA (https://sku.moe)
+                                                                                      
+""")
+
+    local_path = os.path.join(os.path.dirname(__file__), "session.json")
+
+    if os.path.exists(local_path):
+        print(f"检测到本地文件{local_path}\n")
+        with open(local_path, 'r') as f:
+            local = json.load(f)
+    else:
+        isLocal = input("未检测到本地文件, 是否持久化(Y/n)").lower()
+        if not isLocal == 'n':
+            local = {
+                "username": "",
+                "password": ""
+            }
+
     u = input("请输入您的账户: ")
     p = input("请输入您的密码: ")
     asyncio.run(main(u, p))
