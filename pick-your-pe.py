@@ -95,8 +95,12 @@ class PE:
                 },
                 allow_redirects=False  # should be 301 here
         ) as resp:
-            self.local["cookies"]["moodle_session"] = resp.cookies.get('MoodleSession').value
-            self.local["cookies"]["moodle_id"] = resp.cookies.get('MOODLEID1_').value
+            try:
+                self.local["cookies"]["moodle_session"] = resp.cookies.get('MoodleSession').value
+                self.local["cookies"]["moodle_id"] = resp.cookies.get('MOODLEID1_').value
+            except AttributeError:
+                self.log_error(self, "您的密码错误, 程序将退出, 请您确保账号密码正确后再次运行.")
+                exit(1)
             # We don't need to test session, ffffff
             # Location should be like this: https://peselection.xjtlu.edu.cn/login/index.php?testsession=fffff
             # location = resp.headers.get("Location")
@@ -233,8 +237,9 @@ if __name__ == '__main__':
  |_|   |_| \__| |_\_\     |_|   \___/  \_,_| |_|     |_|   |___|
                                                                                                                    
 Github: https://github.com/AprilNEA/pick-your-pe
+License: GPL-3.0 (\033[32m本脚本基于GPL-3.0开源且免费\033[0m)
 Author: AprilNEA (https://sku.moe)
-                                                                                      
+Email: github@sku.moe
 """)
 
     local_path = os.path.join(os.path.dirname(__file__), "session.json")
