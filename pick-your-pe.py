@@ -16,11 +16,30 @@ class PE:
                  password: str = '',
                  local=None
                  ):
+
         self.session = session
-        self.isLogin = False
         self.username = username
         self.password = password
-        self.sessKey = None
+        self.is_login = False
+
+        if local:
+            self.is_login = True
+            self.session.cookie_jar.update_cookies({
+                "MoodleSession": local["cookies"]["moodle_session"],
+                "MOODLEID1_": local["cookies"]["moodle_id"]
+            })
+            self.sessKey = local["sessKey"]
+        else:
+            local = {
+                "username": self.username,
+                "sessKey": "None",
+                "cookies": {
+                    "moodle_session": "",
+                    "moodle_id": ""
+                },
+                "course_list": [],
+                "key": 0,
+            }
         self.local = local
 
     @staticmethod
@@ -31,7 +50,13 @@ class PE:
     def log_info(cls, r):
         print(r)
 
+    def save_local(self):
+        with open(os.path.join(os.path.dirname(__file__), "session.json"), 'w') as f:
+            json.dump(self.local, f)
+
     async def auth(self):
+        if self.is_login:
+            return
         async with self.session.post(
                 url="https://peselection.xjtlu.edu.cn/login/index.php",
                 data={
@@ -40,9 +65,10 @@ class PE:
                     "rememberusername": 1,
                     "anchor": ""
                 },
-                allow_redirects=False
+                allow_redirects=False  # should be 301 here
         ) as resp:
-            pass
+            self.local["cookies"]["moodle_session"] = resp.cookies.get('MoodleSession').value
+            self.local["cookies"]["moodle_id"] = resp.cookies.get('MOODLEID1_').value
             # We don't need to test session, ffffff
             # Location should be like this: https://peselection.xjtlu.edu.cn/login/index.php?testsession=fffff
             # location = resp.headers.get("Location")
@@ -63,6 +89,10 @@ class PE:
             return ""  # a falsy
 
     async def _get_course_list(self):
+        """
+        获取课程列表, 理论上只有一个
+        :return:
+        """
         async with self.session.get("https://peselection.xjtlu.edu.cn/my/") as resp:
             # self.log_debug(self, await resp.text())
             text = await resp.text()
@@ -81,6 +111,7 @@ class PE:
                 "title": title,
                 "true_link": await self._get_ture_link(link)
             }
+        # self.local["course_list"] = course_list
         return course_list
 
     async def _get_options(self, course_link="https://peselection.xjtlu.edu.cn/mod/choice/view.php?id=60"):
@@ -106,6 +137,7 @@ class PE:
             self.log_info(self, "当前课程尚未更新, 请在选择前夕再次尝试!")
             self.log_info(self, "程序将退出")
             exit(1)
+
         return result
 
     async def _submit_choice(self, id, answer):
@@ -136,15 +168,16 @@ class PE:
             self.log_info(self, f"{key}: {option['name']}")
         key = input("请输入您要选择的项目编号:")
 
-        while True:
-            await self._submit_choice(id, key)
+        # while True:
+        #     await self._submit_choice(id, key)
 
 
-async def main(u, p):
+async def main(local=None, *args, **kwargs):
     async with aiohttp.ClientSession(headers={"User-Agent": ua}) as session:
-        app = PE(session, u, p)
+        app = PE(session, local=local, *args, **kwargs)
         await app.auth()
         await app.choice()
+        app.save_local() # 保存数据
 
 
 if __name__ == '__main__':
@@ -168,15 +201,11 @@ Author: AprilNEA (https://sku.moe)
     if os.path.exists(local_path):
         print(f"检测到本地文件{local_path}\n")
         with open(local_path, 'r') as f:
-            local = json.load(f)
-    else:
-        isLocal = input("未检测到本地文件, 是否持久化(Y/n)").lower()
-        if not isLocal == 'n':
-            local = {
-                "username": "",
-                "password": ""
-            }
+            local_files = json.load(f)
+        asyncio.run(main(local=local_files))
 
-    u = input("请输入您的账户: ")
-    p = input("请输入您的密码: ")
-    asyncio.run(main(u, p))
+    else:
+
+        u = input("请输入您的账户: ")
+        p = input("请输入您的密码: ")
+        asyncio.run(main(None, u, p))
