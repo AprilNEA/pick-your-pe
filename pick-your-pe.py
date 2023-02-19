@@ -16,13 +16,19 @@ class PE:
                  password: str = '',
                  local=None
                  ):
-
+        """
+        :param session: 进程
+        :param username: 用户名
+        :param password: 用户密码
+        :param local: 本地持久化数据
+        """
         self.session = session
         self.username = username
         self.password = password
         self.is_login = False
 
         if local:
+            # 持久化数据只需要这两个 Cookies
             self.is_login = True
             self.session.cookie_jar.update_cookies({
                 "MoodleSession": local["cookies"]["moodle_session"],
@@ -44,11 +50,33 @@ class PE:
 
     @staticmethod
     def log_debug(cls, r):
-        print(r)
+        """
+        调试用
+        :param cls:
+        :param r:
+        :return:
+        """
+        print(f"\033[34m[INFO]\033[0m: {r}")
 
     @staticmethod
     def log_info(cls, r):
-        print(r)
+        """
+        输出日志用
+        :param cls: 实例
+        :param r: 实际打印内容
+        :return:
+        """
+        print(f"\033[32m[INFO]\033[0m: {r}")
+
+    @staticmethod
+    def log_error(cls, r):
+        """
+        报错用
+        :param cls: 实例
+        :param r: 实际打印内容
+        :return:
+        """
+        print(f"\033[31m[ERROR]\033[0m: {r}")
 
     def save_local(self):
         with open(os.path.join(os.path.dirname(__file__), "session.json"), 'w') as f:
@@ -90,7 +118,7 @@ class PE:
 
     async def _get_course_list(self):
         """
-        获取课程列表, 理论上只有一个
+        获取课程列表, 理论上一个人会被固定一个课程
         :return:
         """
         async with self.session.get("https://peselection.xjtlu.edu.cn/my/") as resp:
@@ -114,7 +142,12 @@ class PE:
         # self.local["course_list"] = course_list
         return course_list
 
-    async def _get_options(self, course_link="https://peselection.xjtlu.edu.cn/mod/choice/view.php?id=60"):
+    async def _get_options(self, course_link):
+        """
+        获取指定课程的所以选项
+        :param course_link: 课程链接
+        :return:
+        """
         result = {}
         async with self.session.get(
                 url=course_link,
@@ -141,6 +174,12 @@ class PE:
         return result
 
     async def _submit_choice(self, id, answer):
+        """
+        提交你你选择的选项
+        :param id: 课程 ID
+        :param answer: 选项 ID
+        :return:
+        """
         async with self.session.post(
                 url="https://peselection.xjtlu.edu.cn/mod/choice/view.php",
                 data={
@@ -150,9 +189,14 @@ class PE:
                     "id": str(id)
                 }
         ) as resp:
+            # 由于目前没有得到具体的输出, 暂时无法判断正确的返回
             print(await resp.text())
 
     async def choice(self):
+        """
+        实际运行的函数, 所有选择的过程中, 在进行认证后直接运行这个即可
+        :return:
+        """
         course_list = await self._get_course_list()
         if len(course_list) != 1:
             course = course_list[1]
@@ -177,7 +221,7 @@ async def main(local=None, *args, **kwargs):
         app = PE(session, local=local, *args, **kwargs)
         await app.auth()
         await app.choice()
-        app.save_local() # 保存数据
+        app.save_local()  # 保存数据
 
 
 if __name__ == '__main__':
