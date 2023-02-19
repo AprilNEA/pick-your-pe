@@ -1,6 +1,9 @@
 import re
+import os
+import json
 import aiohttp
 from bs4 import BeautifulSoup as bs
+from urllib import parse
 
 ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36"
 sessKeyPattern = re.compile(r'peselection.xjtlu.edu.cn","sesskey":"(\w+)","loadingicon"')
@@ -9,14 +12,16 @@ sessKeyPattern = re.compile(r'peselection.xjtlu.edu.cn","sesskey":"(\w+)","loadi
 class PE:
     def __init__(self,
                  session: aiohttp.ClientSession,
-                 username: str,
-                 password: str
+                 username: str = '',
+                 password: str = '',
+                 local=None
                  ):
         self.session = session
         self.isLogin = False
         self.username = username
         self.password = password
         self.sessKey = None
+        self.local = local
 
     @staticmethod
     def log_debug(cls, r):
@@ -41,6 +46,13 @@ class PE:
             # We don't need to test session, ffffff
             # Location should be like this: https://peselection.xjtlu.edu.cn/login/index.php?testsession=fffff
             # location = resp.headers.get("Location")
+
+        async with self.session.get(
+                url="https://peselection.xjtlu.edu.cn/my/",
+        ) as resp:
+            text = await resp.text()
+        sessKey = sessKeyPattern.findall(text)[0]
+        self.sessKey = sessKey
 
     async def _get_ture_link(self, link) -> str:
         async with self.session.get(url=link, allow_redirects=False) as resp:
@@ -99,9 +111,6 @@ class PE:
     async def _submit_choice(self, id, answer):
         async with self.session.post(
                 url="https://peselection.xjtlu.edu.cn/mod/choice/view.php",
-                headers={
-
-                },
                 data={
                     "answer": answer,
                     "sesskey": self.sessKey,
@@ -109,7 +118,7 @@ class PE:
                     "id": str(id)
                 }
         ) as resp:
-            pass
+            print(await resp.text())
 
     async def choice(self):
         course_list = await self._get_course_list()
@@ -122,9 +131,13 @@ class PE:
         self.log_info(self, f"当前选择的课程为{course['title']}")
 
         option_list = await self._get_options(course["true_link"])
+        id = parse.parse_qs(parse.urlparse(course["true_link"]).query)["id"]
         for key, option in option_list.items():
             self.log_info(self, f"{key}: {option['name']}")
         key = input("请输入您要选择的项目编号:")
+
+        while True:
+            await self._submit_choice(id, key)
 
 
 async def main(u, p):
