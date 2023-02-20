@@ -14,56 +14,55 @@ ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like 
 sessKeyPattern = re.compile(r'peselection.xjtlu.edu.cn","sesskey":"(\w+)","loadingicon"')
 
 timeline = {
-  "D1/01": {
-    "start": 1676934000,
-    "end": 1677081540
-  },
-  "D1/02": {
-    "start": 1676934000,
-    "end": 1677081540
-  },
-  "D1/03": {
-    "start": 1676955600,
-    "end": 0
-  },
-  "D1/04": {
-    "start": 1676955600,
-    "end": 0
-  },
-  "D1/05": {
-    "start": 1676977200,
-    "end": 0
-  },
-  "D1/06": {
-    "start": 1676977200,
-    "end": 0
-  },
-  "D1/07": {
-    "start": 1677020400,
-    "end": 0
-  },
-  "D1/08": {
-    "start": 1677020400,
-    "end": 0
-  },
-  "D1/09": {
-    "start": 1677042000,
-    "end": 0
-  },
-  "D1/10": {
-    "start": 1677042000,
-    "end": 0
-  },
-  "D1/11": {
-    "start": 1677063600,
-    "end": 0
-  },
-  "D1/12": {
-    "start": 1677063600,
-    "end": 0
-  }
+    "D1/01": {
+        "start": 1676934000,
+        "end": 1677081540
+    },
+    "D1/02": {
+        "start": 1676934000,
+        "end": 1677081540
+    },
+    "D1/03": {
+        "start": 1676955600,
+        "end": 0
+    },
+    "D1/04": {
+        "start": 1676955600,
+        "end": 0
+    },
+    "D1/05": {
+        "start": 1676977200,
+        "end": 0
+    },
+    "D1/06": {
+        "start": 1676977200,
+        "end": 0
+    },
+    "D1/07": {
+        "start": 1677020400,
+        "end": 0
+    },
+    "D1/08": {
+        "start": 1677020400,
+        "end": 0
+    },
+    "D1/09": {
+        "start": 1677042000,
+        "end": 0
+    },
+    "D1/10": {
+        "start": 1677042000,
+        "end": 0
+    },
+    "D1/11": {
+        "start": 1677063600,
+        "end": 0
+    },
+    "D1/12": {
+        "start": 1677063600,
+        "end": 0
+    }
 }
-
 
 
 class PE:
@@ -262,17 +261,29 @@ class PE:
         :param answer: 选项 ID
         :return:
         """
+        course_id = parse.parse_qs(parse.urlparse(course["true_link"]).query)["id"][0]
+        print(self.sessKey)
         async with self.session.post(
                 url="https://peselection.xjtlu.edu.cn/mod/choice/view.php",
                 data={
                     "answer": answer,
                     "sesskey": self.sessKey,
                     "action": "makechoice",
-                    "id": str(id)
-                }
+                    "id": str(course_id)
+                },
+                allow_redirects=False
         ) as resp:
             # 由于目前没有得到具体的输出, 暂时无法判断正确的返回
-            print(await resp.text())
+            text = await resp.text()
+            status_code = resp.status
+        text = bs(text, 'html.parser')
+        text = text.find('div', attrs={'id': 'page-content'}).get_text().strip()
+        if "Invalid course module IDMore" in text:
+            self.log_error(self, f"ID 获取有误, 回复状态码为{status_code}")
+        elif "Sorry, this activity is not available until" in text:
+            self.log_info(self, f"提交成功, 课程当前尚未开放, 回复状态码为{status_code}")
+        else:
+            self.log_info(self, f"提交, 结果并未出现在脚本预期中, 回复状态码为{status_code}, 原始返回数据为{text}")
 
     async def choice(self):
         """
@@ -289,7 +300,6 @@ class PE:
         self.log_info(self, f"当前选择的课程为{course['title']}")
 
         option_list = await self._get_options(course["true_link"])
-        id = parse.parse_qs(parse.urlparse(course["true_link"]).query)["id"]
 
         for key, option in option_list.items():
             self.log_info(self, f"{key}: {option['name']}")
