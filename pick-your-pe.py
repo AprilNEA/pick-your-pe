@@ -1,12 +1,19 @@
 import re
 import os
 import json
+import time
+
 import aiohttp
 from bs4 import BeautifulSoup as bs
 from urllib import parse
 from getpass import getpass
+from datetime import datetime
+
 ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36"
 sessKeyPattern = re.compile(r'peselection.xjtlu.edu.cn","sesskey":"(\w+)","loadingicon"')
+
+with open('timeline-sem2.json', 'r') as f:
+    timeline = json.load(f)
 
 
 class PE:
@@ -78,6 +85,14 @@ class PE:
         """
         print(f"\033[31m[ERROR]\033[0m: {r}")
 
+    @staticmethod
+    def wait(cls, t: int):
+        if t < 0:
+            return
+        for i in range(t, 0, -1):
+            print(f"\033[32m[INFO]\033[0m: 脚本将在 {i} 秒后再次检查", end='\r')
+            time.sleep(1)
+
     def save_local(self):
         with open(os.path.join(os.path.dirname(__file__), "session.json"), 'w') as f:
             json.dump(self.local, f)
@@ -138,9 +153,16 @@ class PE:
             href = course.find_all('a')[0]
             link = href.get('href')
             title = href.get('title')
+            try:
+                m = title.strip()[-5:]
+                start = timeline[m]["start"]
+            except:
+                start = 0
+                self.log_error(self, "未找到您课程的抢课开始时间, 请求提交将会即刻开始")
             course_list[cid] = {
                 "link": link,
                 "title": title,
+                "start": start,
                 "true_link": await self._get_ture_link(link)
             }
         # self.local["course_list"] = course_list
@@ -177,7 +199,7 @@ class PE:
 
         return result
 
-    async def _submit_choice(self, id, answer):
+    async def _submit_choice(self, course, answer):
         """
         提交你你选择的选项
         :param id: 课程 ID
@@ -212,12 +234,50 @@ class PE:
 
         option_list = await self._get_options(course["true_link"])
         id = parse.parse_qs(parse.urlparse(course["true_link"]).query)["id"]
+
         for key, option in option_list.items():
             self.log_info(self, f"{key}: {option['name']}")
-        key = input("请输入您要选择的项目编号:")
 
-        # while True:
-        #     await self._submit_choice(id, key)
+        key1, key2 = None, None
+        while not key1:
+            key = input("请输入您的第一志愿序号: ")
+            if key in option_list.keys():
+                key1 = key
+            else:
+                self.log_error(self, "输入的序号有误, 请您参照上方列表")
+                continue
+        while not key2:
+            key = input("请输入您的第二序号: ")
+            if key in option_list.keys():
+                key2 = key
+            else:
+                self.log_error(self, "输入的序号有误, 请您参照上方列表")
+                continue
+
+        self.log_info(self, f"您的选择是\n第一志愿: {option_list[key1]}\n第二志愿: {option_list[key2]}")
+
+        while 1:
+            ddl = datetime.fromtimestamp(course["start"])
+            now = datetime.now()
+            delta = (ddl - now).seconds
+            left_hour = int(delta / 3600)
+            if left_hour > 0:
+                self.log_info(self, f"距离抢课开始时间还有 {delta} 秒, 我们建议您 {left_hour} 个小时后再来运行脚本")
+                self.wait(self, 3600)
+                continue
+            left_min = int(delta / 60)
+            self.log_info(self, f"距离抢课开始时间还有 {left_min} 分钟, 脚本会在开抢 5 分钟开始提交")
+            if left_min < 6:
+                break
+            self.wait(self, 60)
+        num = 0
+
+        while 1:
+            if num <= 10:
+                num += 1
+                await self._submit_choice(course, key1)
+            else:
+                await self._submit_choice(course, key2)
 
 
 async def main(local=None, *args, **kwargs):
@@ -229,29 +289,34 @@ async def main(local=None, *args, **kwargs):
 
 
 if __name__ == '__main__':
-    import asyncio
+    try:
+        import asyncio
 
-    print("""  ___   _        _      __   __                       ___   ___ 
- | _ \ (_)  __  | |__   \ \ / /  ___   _  _   _ _    | _ \ | __|
- |  _/ | | / _| | / /    \ V /  / _ \ | || | | '_|   |  _/ | _| 
- |_|   |_| \__| |_\_\     |_|   \___/  \_,_| |_|     |_|   |___|
-                                                                                                                   
-Github: https://github.com/AprilNEA/pick-your-pe
-License: GPL-3.0 (\033[32m本脚本基于GPL-3.0开源且免费\033[0m)
-Author: AprilNEA (https://sku.moe)
-Email: github@sku.moe
-""")
+        print("""  ___   _        _      __   __                       ___   ___ 
+     | _ \ (_)  __  | |__   \ \ / /  ___   _  _   _ _    | _ \ | __|
+     |  _/ | | / _| | / /    \ V /  / _ \ | || | | '_|   |  _/ | _| 
+     |_|   |_| \__| |_\_\     |_|   \___/  \_,_| |_|     |_|   |___|
+                                                                                                                       
+    Github: https://github.com/AprilNEA/pick-your-pe
+    License: GPL-3.0 (\033[32m本脚本基于GPL-3.0开源且免费\033[0m)
+    Author: AprilNEA (https://sku.moe)
+    Email: github@sku.moe
+    """)
 
-    local_path = os.path.join(os.path.dirname(__file__), "session.json")
+        local_path = os.path.join(os.path.dirname(__file__), "session.json")
 
-    if os.path.exists(local_path):
-        print(f"检测到本地文件{local_path}\n")
-        with open(local_path, 'r') as f:
-            local_files = json.load(f)
-        asyncio.run(main(local=local_files))
+        if os.path.exists(local_path):
+            print(f"检测到本地文件{local_path}\n")
+            with open(local_path, 'r') as f:
+                local_files = json.load(f)
+            asyncio.run(main(local=local_files))
 
-    else:
-        print(f"⚠️ 我们既不会保存更不会上传您的账号密码⚠️")
-        u = input("请输入您的账户: ")
-        p = getpass("请输入您的密码(密码不会显示,默念继续输就行): ")
-        asyncio.run(main(None, u, p))
+        else:
+            print(f"⚠️ 我们既不会保存更不会上传您的账号密码⚠️")
+            u = input("请输入您的账户: ")
+            p = getpass("请输入您的密码(密码不会显示,默念继续输就行): ")
+            asyncio.run(main(None, u, p))
+
+    except KeyboardInterrupt:
+        print("\n")
+        PE.log_info(None, "感谢使用.")
