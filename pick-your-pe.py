@@ -13,8 +13,57 @@ from aiohttp.client_exceptions import ClientError, ClientConnectorCertificateErr
 ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36"
 sessKeyPattern = re.compile(r'peselection.xjtlu.edu.cn","sesskey":"(\w+)","loadingicon"')
 
-with open('timeline-sem2.json', 'r') as f:
-    timeline = json.load(f)
+timeline = {
+  "D1/01": {
+    "start": 1676934000,
+    "end": 1677081540
+  },
+  "D1/02": {
+    "start": 1676934000,
+    "end": 1677081540
+  },
+  "D1/03": {
+    "start": 1676955600,
+    "end": 0
+  },
+  "D1/04": {
+    "start": 1676955600,
+    "end": 0
+  },
+  "D1/05": {
+    "start": 1676977200,
+    "end": 0
+  },
+  "D1/06": {
+    "start": 1676977200,
+    "end": 0
+  },
+  "D1/07": {
+    "start": 1677020400,
+    "end": 0
+  },
+  "D1/08": {
+    "start": 1677020400,
+    "end": 0
+  },
+  "D1/09": {
+    "start": 1677042000,
+    "end": 0
+  },
+  "D1/10": {
+    "start": 1677042000,
+    "end": 0
+  },
+  "D1/11": {
+    "start": 1677063600,
+    "end": 0
+  },
+  "D1/12": {
+    "start": 1677063600,
+    "end": 0
+  }
+}
+
 
 
 class PE:
