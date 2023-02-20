@@ -175,9 +175,13 @@ class PE:
         ) as resp:
             text = await resp.text()
         sessKey = sessKeyPattern.findall(text)[0]
-        self.sessKey = sessKey
-
-        self.save_local()
+        if not sessKey:
+            self.log_error(self, "未拿到sessKey, 请尝试重新运行程序")
+            exit(1)
+        else:
+            self.sessKey = sessKey
+            self.local["sessKey"] = sessKey
+            self.save_local()
 
     async def _get_ture_link(self, link) -> str:
         async with self.session.get(url=link, allow_redirects=False) as resp:
