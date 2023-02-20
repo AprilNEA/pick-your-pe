@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup as bs
 from urllib import parse
 from getpass import getpass
 from datetime import datetime
+from aiohttp.client_exceptions import ClientError, ClientConnectorCertificateError
 
 ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36"
 sessKeyPattern = re.compile(r'peselection.xjtlu.edu.cn","sesskey":"(\w+)","loadingicon"')
@@ -320,3 +321,10 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         print("\n")
         PE.log_info(None, "感谢使用.")
+    except ClientConnectorCertificateError:
+        print("\n")
+        PE.log_error(None, "网络错误, SSL 认证错误")
+        PE.log_info(None, "请检查你的 Python 版本(需要3.7.5^)或关闭魔法网络 (#^.^#)")
+    except ClientError:
+        print("\n")
+        PE.log_error(None, "网络连接错误")
