@@ -17,10 +17,9 @@
 - [x] 加入第二志愿
 
 
-<center class="half">
-<img src="./docs/demo.png" width="500"/><img src="./docs/demo2.png" width="500"/>
-
-</center>
+|||
+|--|--|
+| <img src="./docs/demo.png" width="500"/>| <img src="./docs/demo2.png" width="500"/> |
 
 
 ![流程图](./docs/pick-your-pe.drawio.svg)
