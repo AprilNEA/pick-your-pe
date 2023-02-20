@@ -29,9 +29,11 @@
 环境: Python 3.8 以上
 
 ### 二进制运行
+我们不建议您使用二进制运行, 您可以自主在 releases 中找到相关平台的二进制文件
 
 ### 源码运行
 
+首次运行(带安装)
 ```shell
 git clone https://github.com/AprilNEA/pick-your-pe.git
 cd pick-your-pe
@@ -41,4 +43,9 @@ pip3 install -r requirements.txt
 
 # run scripts
 python3 pick-your-pe.py
+```
+
+再次运行时
+```shell
+git pull && python3 pick-your-pe.py
 ```
