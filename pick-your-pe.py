@@ -254,7 +254,7 @@ class PE:
                 self.log_error(self, "输入的序号有误, 请您参照上方列表")
                 continue
 
-        self.log_info(self, f"您的选择是\n第一志愿: {option_list[key1]}\n第二志愿: {option_list[key2]}")
+        self.log_info(self, f"您的选择是\n第一志愿: {option_list[key1]['name']}\n第二志愿: {option_list[key2]['name']}")
 
         while 1:
             ddl = datetime.fromtimestamp(course["start"])
