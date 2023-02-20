@@ -18,8 +18,7 @@
 
 
 <center class="half">
-<img src="./docs/demo.png" width="300"/>
-<img src="./docs/demo2.png" width="300"/>
+<img src="./docs/demo.png" width="500"/><img src="./docs/demo2.png" width="500"/>
 
 </center>
 
