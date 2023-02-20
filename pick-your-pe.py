@@ -177,6 +177,8 @@ class PE:
         sessKey = sessKeyPattern.findall(text)[0]
         self.sessKey = sessKey
 
+        self.save_local()
+
     async def _get_ture_link(self, link) -> str:
         async with self.session.get(url=link, allow_redirects=False) as resp:
             location = resp.headers.get("Location")
@@ -335,7 +337,6 @@ async def main(local=None, *args, **kwargs):
         app = PE(session, local=local, *args, **kwargs)
         await app.auth()
         await app.choice()
-        app.save_local()  # 保存数据
 
 
 if __name__ == '__main__':
