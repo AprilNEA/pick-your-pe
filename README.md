@@ -20,7 +20,9 @@
 |||
 |--|--|
 | <img src="./docs/demo.png" width="500"/>| <img src="./docs/demo2.png" width="500"/> |
+| <img src="./docs/demo3.png" width="500"/>| <img src="./docs/demo4.png" width="500"/> |
 
+如图3,4 即为成功
 
 ![流程图](./docs/pick-your-pe.drawio.svg)
 
