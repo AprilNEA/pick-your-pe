@@ -337,12 +337,19 @@ class PE:
                 break
             self.wait(self, 60)
         num = 0
-
+        num2 = 0
         while 1:
-            if num <= 10:
-                num += 1
+            num += 1
+            delta = (datetime.fromtimestamp(course["start"]) - datetime.now()).seconds
+
+            if delta < 0:
+                num2 += 1
+
+            if num2 < 10:
+                self.log_info(self, num)
                 await self._submit_choice(course, key1)
             else:
+                self.log_info(self, num)
                 await self._submit_choice(course, key2)
 
 
