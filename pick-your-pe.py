@@ -313,7 +313,7 @@ class PE:
                 self.log_error(self, "输入的序号有误, 请您参照上方列表")
                 continue
         while not key2:
-            key = input("请输入您的第二序号: ")
+            key = input("请输入您的第二志愿序号: ")
             if key in option_list.keys():
                 key2 = key
             else:
