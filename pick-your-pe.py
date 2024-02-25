@@ -15,51 +15,51 @@ sessKeyPattern = re.compile(r'peselection.xjtlu.edu.cn","sesskey":"(\w+)","loadi
 
 timeline = {
     "D1/01": {
-        "start": 1676934000,
-        "end": 1677081540
+        "start": 1708902000,
+        "end": 0
     },
     "D1/02": {
-        "start": 1676934000,
-        "end": 1677081540
+        "start": 1708902000,
+        "end": 0
     },
     "D1/03": {
-        "start": 1676955600,
+        "start": 1708923600,
         "end": 0
     },
     "D1/04": {
-        "start": 1676955600,
+        "start": 1708923600,
         "end": 0
     },
     "D1/05": {
-        "start": 1676977200,
+        "start": 1708945200,
         "end": 0
     },
     "D1/06": {
-        "start": 1676977200,
+        "start": 1708945200,
         "end": 0
     },
     "D1/07": {
-        "start": 1677020400,
+        "start": 1708988400,
         "end": 0
     },
     "D1/08": {
-        "start": 1677020400,
+        "start": 1708988400,
         "end": 0
     },
     "D1/09": {
-        "start": 1677042000,
+        "start": 1709010000,
         "end": 0
     },
     "D1/10": {
-        "start": 1677042000,
+        "start": 1709010000,
         "end": 0
     },
     "D1/11": {
-        "start": 1677063600,
+        "start": 1709031600,
         "end": 0
     },
     "D1/12": {
-        "start": 1677063600,
+        "start": 1709031600,
         "end": 0
     }
 }
@@ -313,7 +313,7 @@ class PE:
                 self.log_error(self, "输入的序号有误, 请您参照上方列表")
                 continue
         while not key2:
-            key = input("请输入您的第二序号: ")
+            key = input("请输入您的第二志愿序号: ")
             if key in option_list.keys():
                 key2 = key
             else:
